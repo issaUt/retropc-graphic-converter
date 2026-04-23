@@ -24,6 +24,58 @@ MzGraphicConv/
 
 Rubyスクリプト本体はこのGUIプロジェクトの外部に置き、GUIの `Settings` タブにある `Script` 欄で指定する運用を想定しています。
 
+## Initial Setup
+
+初回起動後、まず `Settings` タブでRuby実行ファイルと変換スクリプトを指定してください。
+
+![Settings tab](docs/images/settings-ruby-script.svg)
+
+### 1. Ruby
+
+`Ruby` にはRuby実行ファイルを指定します。
+
+RubyにPATHが通っている場合は、既定値のまま `ruby` で動作します。動作しない場合は `参照...` から `ruby.exe` を指定してください。
+
+例:
+
+```text
+ruby
+```
+
+または:
+
+```text
+C:\Ruby32-x64\bin\ruby.exe
+```
+
+### 2. Script
+
+`Script` にはRuby変換スクリプト `pngconvMZ.rb` を指定します。
+
+例:
+
+```text
+D:\home\work\ruby\imagetrans\pngconvMZ.rb
+```
+
+このGUIにはRubyスクリプト本体を同梱しません。別途 `pngconvMZ.rb` を取得し、Ruby側READMEに従って必要なgemをインストールしてください。
+
+### 3. Script Version
+
+`Get` ボタンを押すと、指定したスクリプトに対して以下を実行し、バージョン情報を表示します。
+
+```powershell
+ruby pngconvMZ.rb --json --info
+```
+
+正常に取得できる場合は、以下のように表示されます。
+
+```text
+pngconvMZ 0.1.0-alpha
+```
+
+ここまで確認できれば、`Convert` タブで入力画像、出力先、変換条件を指定して実行できます。
+
 ## Build
 
 ソリューションをVisual Studioで開く場合:

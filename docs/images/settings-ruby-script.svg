@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="360" viewBox="0 0 920 360" role="img" aria-labelledby="title desc">
+  <title id="title">Settings tab for Ruby and converter script</title>
+  <desc id="desc">A simplified RetroPC Graphic Converter settings screen showing Ruby, Script, Script Version, and Get controls.</desc>
+  <style>
+    .window { fill: #f2f2f2; stroke: #8a8a8a; }
+    .title { font: 14px "Segoe UI", Arial, sans-serif; fill: #111; }
+    .tab { fill: #e8e8e8; stroke: #b8b8b8; }
+    .tab-active { fill: #fff; stroke: #707070; }
+    .label { font: 13px "Segoe UI", Arial, sans-serif; fill: #111; }
+    .input { fill: #fff; stroke: #a8a8a8; }
+    .button { fill: #f8f8f8; stroke: #a8a8a8; }
+    .small { font: 12px "Segoe UI", Arial, sans-serif; fill: #333; }
+    .hint { font: 13px "Segoe UI", Arial, sans-serif; fill: #1f4f82; font-weight: 600; }
+    .callout { fill: #fff8d7; stroke: #d6b656; }
+    .arrow { stroke: #d6b656; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#d6b656" />
+    </marker>
+  </defs>
+
+  <rect class="window" x="1" y="1" width="918" height="358" rx="4" />
+  <rect x="1" y="1" width="918" height="32" fill="#fbfbfb" stroke="#b8b8b8" />
+  <text class="title" x="14" y="22">RetroPC Graphic Converter</text>
+
+  <rect class="tab" x="16" y="48" width="52" height="24" />
+  <text class="small" x="24" y="65">Convert</text>
+  <rect class="tab-active" x="68" y="48" width="62" height="24" />
+  <text class="small" x="77" y="65">Settings</text>
+
+  <rect x="16" y="72" width="888" height="250" fill="#f7f7f7" stroke="#d0d0d0" />
+
+  <text class="label" x="30" y="108">Ruby</text>
+  <rect class="input" x="128" y="86" width="684" height="24" />
+  <text class="small" x="136" y="103">ruby</text>
+  <rect class="button" x="824" y="84" width="76" height="28" rx="3" />
+  <text class="small" x="848" y="103">参照...</text>
+
+  <text class="label" x="30" y="148">Script</text>
+  <rect class="input" x="128" y="126" width="684" height="24" />
+  <text class="small" x="136" y="143">D:\home\work\ruby\imagetrans\pngconvMZ.rb</text>
+  <rect class="button" x="824" y="124" width="76" height="28" rx="3" />
+  <text class="small" x="848" y="143">参照...</text>
+
+  <text class="label" x="30" y="188">Script Version</text>
+  <text class="hint" x="128" y="188">pngconvMZ 0.1.0-alpha</text>
+  <rect class="button" x="824" y="164" width="76" height="28" rx="3" />
+  <text class="small" x="852" y="183">Get</text>
+
+  <rect class="callout" x="118" y="230" width="520" height="58" rx="4" />
+  <text class="small" x="132" y="252">1. Ruby には ruby または ruby.exe のパスを指定します。</text>
+  <text class="small" x="132" y="274">2. Script には pngconvMZ.rb を指定し、Get でバージョンを確認します。</text>
+  <path class="arrow" d="M640 248 C725 232 778 187 821 178" />
+</svg>
