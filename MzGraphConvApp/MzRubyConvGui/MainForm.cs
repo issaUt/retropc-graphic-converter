@@ -503,7 +503,7 @@ public partial class MainForm : Form
     private void ApplyDefaults()
     {
         txtRuby.Text = "ruby";
-        txtScript.Text = @"D:\home\work\ruby\imagetrans\pngconvMZv006.rb";
+        txtScript.Text = string.Empty;
         txtOutputDir.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MzRubyConv");
         txtBaseName.Text = "output";
 

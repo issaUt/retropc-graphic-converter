@@ -21,7 +21,7 @@ MzGraphicConv/
 - Ruby
 - 画像変換Rubyスクリプト
   - https://github.com/issaUt/mz-ruby-graphic-core
-  - 例: `D:\home\work\ruby\imagetrans\pngconvMZ.rb`
+  - 例: `C:\RetroPC\mz-ruby-graphic-core\pngconvMZ.rb`
 
 Rubyスクリプト本体はこのGUIプロジェクトの外部に置き、GUIの `Settings` タブにある `Script` 欄で指定する運用を想定しています。
 
@@ -56,7 +56,7 @@ C:\Ruby32-x64\bin\ruby.exe
 例:
 
 ```text
-D:\home\work\ruby\imagetrans\pngconvMZ.rb
+C:\RetroPC\mz-ruby-graphic-core\pngconvMZ.rb
 ```
 
 このGUIにはRubyスクリプト本体を同梱しません。別途 [mz-ruby-graphic-core](https://github.com/issaUt/mz-ruby-graphic-core) から `pngconvMZ.rb` を取得し、Ruby側READMEに従って必要なgemをインストールしてください。

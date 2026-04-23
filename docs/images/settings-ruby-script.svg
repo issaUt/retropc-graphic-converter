@@ -39,7 +39,7 @@
 
   <text class="label" x="30" y="148">Script</text>
   <rect class="input" x="128" y="126" width="684" height="24" />
-  <text class="small" x="136" y="143">D:\home\work\ruby\imagetrans\pngconvMZ.rb</text>
+  <text class="small" x="136" y="143">C:\RetroPC\mz-ruby-graphic-core\pngconvMZ.rb</text>
   <rect class="button" x="824" y="124" width="76" height="28" rx="3" />
   <text class="small" x="848" y="143">参照...</text>
 
