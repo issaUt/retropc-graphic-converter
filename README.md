@@ -20,6 +20,7 @@ MzGraphicConv/
 - .NET SDK 8.0
 - Ruby
 - 画像変換Rubyスクリプト
+  - https://github.com/issaUt/mz-ruby-graphic-core
   - 例: `D:\home\work\ruby\imagetrans\pngconvMZ.rb`
 
 Rubyスクリプト本体はこのGUIプロジェクトの外部に置き、GUIの `Settings` タブにある `Script` 欄で指定する運用を想定しています。
@@ -58,7 +59,7 @@ C:\Ruby32-x64\bin\ruby.exe
 D:\home\work\ruby\imagetrans\pngconvMZ.rb
 ```
 
-このGUIにはRubyスクリプト本体を同梱しません。別途 `pngconvMZ.rb` を取得し、Ruby側READMEに従って必要なgemをインストールしてください。
+このGUIにはRubyスクリプト本体を同梱しません。別途 [mz-ruby-graphic-core](https://github.com/issaUt/mz-ruby-graphic-core) から `pngconvMZ.rb` を取得し、Ruby側READMEに従って必要なgemをインストールしてください。
 
 ### 3. Script Version
 
@@ -110,7 +111,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\package-release.ps
 dist/MzRubyConvGui-win-x64.zip
 ```
 
-この配布ZIPにはGUI本体のみを含めます。Ruby本体と `pngconvMZ.rb` は同梱しません。ユーザーはRubyを別途インストールし、GUIの `Ruby` 欄と `Script` 欄で使用するRuby実行ファイルと変換スクリプトを指定してください。
+この配布ZIPにはGUI本体のみを含めます。Ruby本体と `pngconvMZ.rb` は同梱しません。ユーザーはRubyを別途インストールし、[mz-ruby-graphic-core](https://github.com/issaUt/mz-ruby-graphic-core) から変換スクリプトを取得して、GUIの `Ruby` 欄と `Script` 欄で使用するRuby実行ファイルと変換スクリプトを指定してください。
 
 自己完結型として.NETランタイム込みでpublishしたい場合:
 
