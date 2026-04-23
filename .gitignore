@@ -1,0 +1,58 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+arm/
+arm64/
+
+# .NET
+artifacts/
+dist/
+publish/
+TestResults/
+*.nupkg
+*.snupkg
+*.coverage
+*.coveragexml
+coverage/
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Local app/settings files
+settings.json
+*.local.json
+*.local
+
+# Converter outputs
+out/
+outdir/
+output/
+outputs/
+*.brd
+*.bsd
+*.pallet
+*.palette
+
+# Accidental WinForms resources for helper partial classes
+MzGraphConvApp/MzRubyConvGui/RubyRunTypes.resx
+
+# Temporary files
+*.tmp
+*.temp
+*.log
