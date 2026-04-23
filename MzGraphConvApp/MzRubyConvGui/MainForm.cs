@@ -1286,7 +1286,7 @@ public partial class MainForm : Form
         yield return Path.Combine(outputDir, $"{baseStem}.bas.bsd");
         if (mode == "4096")
         {
-            yield return Path.Combine(outputDir, $"{baseStem}.pallet");
+            yield return Path.Combine(outputDir, $"{baseStem}.palette");
         }
     }
 
