@@ -74,6 +74,7 @@ dist/MzRubyConvGui-win-x64.zip
 
 - Rubyスクリプトのコマンドライン引数をGUIから指定
 - `Settings` タブでRuby実行ファイルと変換スクリプトを指定
+- `Settings` タブで変換スクリプトのバージョン情報を確認
 - 入力画像 PNG/JPEG、出力フォルダ、ベース名の指定と履歴保存
 - PNGのみ出力の指定
 - 変換後PNG/BRD/BSD/Paletteファイルの一覧表示

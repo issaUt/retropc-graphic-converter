@@ -21,6 +21,8 @@ public partial class MainForm : Form
 
     private readonly TextBox txtRuby = new();
     private readonly TextBox txtScript = new();
+    private readonly Label lblScriptVersion = new();
+    private readonly Button btnGetScriptVersion = new();
     private readonly ComboBox txtInput = new();
     private readonly ComboBox txtOutputDir = new();
     private readonly ComboBox txtBaseName = new();
@@ -186,15 +188,16 @@ public partial class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 2,
+            RowCount = 3,
             Padding = new Padding(8, 12, 8, 8)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 108));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        var panel = CreatePathPanel(2);
+        var panel = CreatePathPanel(3);
         AddPathRow(panel, 0, "Ruby", txtRuby, "参照...", BrowseRuby);
         AddPathRow(panel, 1, "Script", txtScript, "参照...", BrowseScript);
+        AddScriptVersionRow(panel, 2);
         root.Controls.Add(panel, 0, 0);
         return root;
     }
@@ -564,6 +567,7 @@ public partial class MainForm : Form
 
             txtRuby.Text = settings.RubyPath ?? txtRuby.Text;
             txtScript.Text = settings.ScriptPath ?? txtScript.Text;
+            _ = RefreshScriptVersionAsync(showErrors: false);
             txtInput.Text = settings.InputPath ?? txtInput.Text;
             txtOutputDir.Text = settings.OutputDir ?? txtOutputDir.Text;
             txtBaseName.Text = settings.BaseName ?? txtBaseName.Text;
@@ -645,6 +649,23 @@ public partial class MainForm : Form
         var button = new Button { Text = buttonText, Dock = DockStyle.Fill };
         button.Click += handler;
         panel.Controls.Add(button, 5, row);
+    }
+
+    private void AddScriptVersionRow(TableLayoutPanel panel, int row)
+    {
+        panel.Controls.Add(MakeLabel("Script Version"), 0, row);
+        lblScriptVersion.Text = "Not checked";
+        lblScriptVersion.AutoSize = false;
+        lblScriptVersion.Dock = DockStyle.Fill;
+        lblScriptVersion.TextAlign = ContentAlignment.MiddleLeft;
+        lblScriptVersion.Margin = new Padding(0, 4, 4, 4);
+        panel.Controls.Add(lblScriptVersion, 1, row);
+        panel.SetColumnSpan(lblScriptVersion, 4);
+
+        btnGetScriptVersion.Text = "Get";
+        btnGetScriptVersion.Dock = DockStyle.Fill;
+        btnGetScriptVersion.Click += async (_, _) => await RefreshScriptVersionAsync(showErrors: true);
+        panel.Controls.Add(btnGetScriptVersion, 5, row);
     }
 
     private void AddInputPathRow(TableLayoutPanel panel, int row)
@@ -850,6 +871,7 @@ public partial class MainForm : Form
         if (dialog.ShowDialog(this) == DialogResult.OK)
         {
             txtScript.Text = dialog.FileName;
+            _ = RefreshScriptVersionAsync(showErrors: false);
         }
     }
 
@@ -881,6 +903,100 @@ public partial class MainForm : Form
         {
             txtOutputDir.Text = dialog.SelectedPath;
         }
+    }
+
+    private async Task RefreshScriptVersionAsync(bool showErrors)
+    {
+        if (string.IsNullOrWhiteSpace(txtRuby.Text) || string.IsNullOrWhiteSpace(txtScript.Text))
+        {
+            lblScriptVersion.Text = "Not configured";
+            return;
+        }
+
+        if (!File.Exists(txtScript.Text))
+        {
+            lblScriptVersion.Text = "Script not found";
+            return;
+        }
+
+        btnGetScriptVersion.Enabled = false;
+        lblScriptVersion.Text = "Checking...";
+        try
+        {
+            var result = await RunRubyInfoAsync();
+            if (result.ExitCode != 0)
+            {
+                throw new InvalidOperationException(result.Log);
+            }
+
+            using var document = JsonDocument.Parse(result.StdOut);
+            var root = document.RootElement;
+            var version = root.TryGetProperty("version", out var versionElement)
+                ? versionElement.GetString()
+                : null;
+            var name = root.TryGetProperty("name", out var nameElement)
+                ? nameElement.GetString()
+                : "Script";
+
+            lblScriptVersion.Text = string.IsNullOrWhiteSpace(version)
+                ? "Version unavailable"
+                : $"{name} {version}";
+        }
+        catch (Exception ex)
+        {
+            lblScriptVersion.Text = "Version unavailable";
+            if (showErrors)
+            {
+                MessageBox.Show(this, ex.Message, "Version Check Failed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        finally
+        {
+            btnGetScriptVersion.Enabled = true;
+        }
+    }
+
+    private async Task<RubyRunResult> RunRubyInfoAsync()
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = txtRuby.Text.Trim(),
+            WorkingDirectory = Path.GetDirectoryName(txtScript.Text) ?? Environment.CurrentDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8
+        };
+        psi.ArgumentList.Add(txtScript.Text.Trim());
+        psi.ArgumentList.Add("--json");
+        psi.ArgumentList.Add("--info");
+
+        using var process = Process.Start(psi) ?? throw new InvalidOperationException("Failed to start ruby process.");
+        var stdOutTask = process.StandardOutput.ReadToEndAsync();
+        var stdErrTask = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+
+        var stdOut = await stdOutTask;
+        var stdErr = await stdErrTask;
+        var log = new StringBuilder();
+        log.AppendLine(BuildCommandPreview(psi));
+        if (!string.IsNullOrWhiteSpace(stdErr))
+        {
+            log.AppendLine();
+            log.AppendLine("[stderr]");
+            log.AppendLine(stdErr.TrimEnd());
+        }
+
+        if (process.ExitCode != 0 && !string.IsNullOrWhiteSpace(stdOut))
+        {
+            log.AppendLine();
+            log.AppendLine("[stdout]");
+            log.AppendLine(stdOut.TrimEnd());
+        }
+
+        return new RubyRunResult(process.ExitCode, stdOut, log.ToString(), false);
     }
 
     private void HandleInputTextChanged()
