@@ -74,7 +74,7 @@ ruby pngconvMZ.rb --json --info
 正常に取得できる場合は、以下のように表示されます。
 
 ```text
-pngconvMZ 0.1.0-alpha
+pngconvMZ 0.1.2
 ```
 
 ここまで確認できれば、`Convert` タブで入力画像、出力先、変換条件を指定して実行できます。
@@ -109,6 +109,9 @@ dotnet build .\MzGraphConvApp\MzRubyConvGui\MzRubyConvGui.csproj
 - Preview表示のアスペクト補正切替
 - 実行中キャンセル
 - 上書き確認
+- D88ディスクイメージ生成
+- `BRD/BSDファイルを残す` チェックによる sidecar ファイル保持切替
+- D88内部ファイル名の長さ事前チェック
 
 ユーザー設定は以下に保存されます。
 
@@ -124,5 +127,36 @@ dotnet build .\MzGraphConvApp\MzRubyConvGui\MzRubyConvGui.csproj
 
 生成されたファイルの利用や、実機・エミュレータでの読み込みは、利用者ご自身の責任で行ってください。重要なデータを扱う場合は、事前にバックアップを取ることをおすすめします。
 
+## D88 Support
 
+`Convert` タブで `D88ディスクイメージを生成` を有効にすると、変換後の `BRD` / `BSD` をD88ディスクイメージへ追加できます。
 
+- `BRD/BSDファイルを残す` にチェックがある場合:
+  - D88追加後も `BRD` / `BSD` を出力フォルダへ残します。
+- チェックがない場合:
+  - D88追加後に `BRD` / `BSD` を削除します。
+
+D88ファイル名は `Output Dir` と `Base Name` から自動決定されます。
+
+## File Naming Notes
+
+512色モードでは固定色出力ファイル名に `_FR` / `_FG` / `_FB` を使用します。
+
+例:
+
+- `sample_FR.png`
+- `sample_FR.brd`
+- `sample_FR.bas.bsd`
+
+`split320x200` では upper / lower に加えて、結合BSDファイルとして `_c.bas.bsd` を使用します。
+
+例:
+
+- `sample_FR_u.brd`
+- `sample_FR_l.brd`
+- `sample_FR_c.bas.bsd`
+
+## D88 Name Length Limit
+
+D88内部ファイル名は安全側の運用として **16 bytes以内** を前提にしています。
+GUIは変換開始前にこの条件をチェックし、長すぎる場合は `Base Name` を短くするよう警告します。

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [string]$Configuration = "Release",
     [string]$Runtime = "win-x64",
     [bool]$SelfContained = $false
@@ -47,7 +47,6 @@ Script:
 
 For PNG-only use, enable:
   MZ-2500専用ファイルを出力しない
-
 For MZ-2500 file output, leave that option unchecked.
 "@
 
@@ -62,3 +61,4 @@ Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Fo
 
 Write-Host "Created package:"
 Write-Host $zipPath
+

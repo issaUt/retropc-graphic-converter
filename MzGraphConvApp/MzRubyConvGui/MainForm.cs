@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.Text;
@@ -36,6 +36,9 @@ public partial class MainForm : Form
     private readonly ComboBox cmbSort = new();
     private readonly NumericUpDown numStrength = new();
     private readonly CheckBox chkPngOnly = new();
+    private readonly CheckBox chkCreateD88 = new();
+    private readonly CheckBox chkKeepD88Sidecar = new();
+    private readonly TextBox txtD88Path = new();
     private readonly Button btnRun = new();
     private readonly Button btnCancel = new();
     private readonly Button btnResetCoreOptions = new();
@@ -168,6 +171,10 @@ public partial class MainForm : Form
         };
         cmbResize.SelectedIndexChanged += (_, _) => UpdateOriginalResizePreview();
         txtInput.TextChanged += (_, _) => HandleInputTextChanged();
+        txtOutputDir.TextChanged += (_, _) => UpdateD88PathDisplay();
+        txtBaseName.TextChanged += (_, _) => UpdateD88PathDisplay();
+        chkPngOnly.CheckedChanged += (_, _) => UpdateOptionState();
+        chkCreateD88.CheckedChanged += (_, _) => UpdateOptionState();
 
         controlsDisabledDuringRun.AddRange([pathsPanel, outputPanel, ditherPanel]);
 
@@ -191,7 +198,7 @@ public partial class MainForm : Form
             RowCount = 3,
             Padding = new Padding(8, 12, 8, 8)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 108));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 144));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var panel = CreatePathPanel(3);
@@ -210,13 +217,23 @@ public partial class MainForm : Form
         panel.Controls.Add(txtBaseName, 1, 0);
         panel.SetColumnSpan(txtBaseName, 3);
         AddRightOptionCombo(panel, "Resize", cmbResize, 0, ["fit", "keep", "cut"]);
-
-        chkPngOnly.Text = "MZ-2500専用ファイルを出力しない";
+        chkPngOnly.Text = "MZ-2500\u5c02\u7528\u30d5\u30a1\u30a4\u30eb\u3092\u51fa\u529b\u3057\u306a\u3044";
         chkPngOnly.AutoSize = true;
         chkPngOnly.Dock = DockStyle.Fill;
         chkPngOnly.TextAlign = ContentAlignment.MiddleLeft;
         panel.Controls.Add(chkPngOnly, 1, 1);
-        panel.SetColumnSpan(chkPngOnly, 5);
+        panel.SetColumnSpan(chkPngOnly, 2);
+        chkCreateD88.Text = "D88\u30c7\u30a3\u30b9\u30af\u30a4\u30e1\u30fc\u30b8\u3092\u751f\u6210";
+        chkCreateD88.AutoSize = true;
+        chkCreateD88.Dock = DockStyle.Fill;
+        chkCreateD88.TextAlign = ContentAlignment.MiddleLeft;
+        panel.Controls.Add(chkCreateD88, 3, 1);
+        chkKeepD88Sidecar.Text = "BRD/BSDファイルを残す";
+        chkKeepD88Sidecar.AutoSize = true;
+        chkKeepD88Sidecar.Dock = DockStyle.Fill;
+        chkKeepD88Sidecar.TextAlign = ContentAlignment.MiddleLeft;
+        panel.Controls.Add(chkKeepD88Sidecar, 4, 1);
+        panel.SetColumnSpan(chkKeepD88Sidecar, 2);
 
         panel.Controls.Add(MakeLabel("Mode"), 0, 2);
         SetupCombo(cmbMode, ["8", "16", "512", "4096"]);
@@ -516,7 +533,10 @@ public partial class MainForm : Form
         cmbRemove.SelectedItem = "no_remove";
         cmbSort.SelectedItem = "no_sort";
         chkPngOnly.Checked = false;
+        chkCreateD88.Checked = false;
+        chkKeepD88Sidecar.Checked = true;
         numStrength.Value = 1.0M;
+        UpdateD88PathDisplay();
         UpdateOptionState();
     }
 
@@ -531,7 +551,10 @@ public partial class MainForm : Form
         SetCombo(cmbRemove, "no_remove");
         SetCombo(cmbSort, "no_sort");
         chkPngOnly.Checked = false;
+        chkCreateD88.Checked = false;
+        chkKeepD88Sidecar.Checked = true;
         numStrength.Value = 1.0M;
+        UpdateD88PathDisplay();
         UpdateOptionState();
         UpdatePreviewDisplayAspect();
         UpdateOriginalResizePreview();
@@ -580,6 +603,9 @@ public partial class MainForm : Form
             SetCombo(cmbRemove, settings.Remove);
             SetCombo(cmbSort, settings.Sort);
             chkPngOnly.Checked = settings.PngOnly;
+            chkCreateD88.Checked = settings.CreateD88;
+            chkKeepD88Sidecar.Checked = settings.KeepD88SidecarFiles
+                ?? !string.Equals(settings.D88Sidecar, "delete", StringComparison.OrdinalIgnoreCase);
             chkPreviewDisplayAspect.Checked = settings.PreviewDisplayAspect;
             if (settings.Strength >= numStrength.Minimum && settings.Strength <= numStrength.Maximum)
             {
@@ -590,6 +616,7 @@ public partial class MainForm : Form
             statusLabel.Text = File.Exists(txtInput.Text)
                 ? "Input image selected. Press Load or Run."
                 : "Ready";
+            UpdateD88PathDisplay();
             UpdateOptionState();
         }
         catch (Exception ex)
@@ -623,6 +650,9 @@ public partial class MainForm : Form
                 Remove = Selected(cmbRemove),
                 Sort = Selected(cmbSort),
                 PngOnly = chkPngOnly.Checked,
+                CreateD88 = chkCreateD88.Checked,
+                D88Sidecar = chkKeepD88Sidecar.Checked ? "keep" : "delete",
+                KeepD88SidecarFiles = chkKeepD88Sidecar.Checked,
                 PreviewDisplayAspect = chkPreviewDisplayAspect.Checked
             };
 
@@ -1070,6 +1100,15 @@ public partial class MainForm : Form
         {
             cmbLayout.SelectedItem = "320x200";
         }
+
+        if (chkPngOnly.Checked)
+        {
+            chkCreateD88.Checked = false;
+        }
+
+        chkCreateD88.Enabled = !chkPngOnly.Checked;
+        chkKeepD88Sidecar.Enabled = chkCreateD88.Checked;
+        UpdateD88PathDisplay();
     }
 
     private async Task RunConversionAsync()
@@ -1190,6 +1229,24 @@ public partial class MainForm : Form
         {
             MessageBox.Show(this, "512-color mode cannot use the 640x400 layout.", "Unsupported Layout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
+        }
+        if (chkCreateD88.Checked && !chkPngOnly.Checked)
+        {
+            var tooLong = BuildProjectedD88InternalNames()
+                .Where(name => Encoding.ASCII.GetByteCount(name) > 16)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (tooLong.Count > 0)
+            {
+                var preview = string.Join(Environment.NewLine, tooLong.Select(name => $" - {name}"));
+                MessageBox.Show(
+                    this,
+                    $"D88 internal file names must be 16 bytes or less.{Environment.NewLine}{Environment.NewLine}{preview}{Environment.NewLine}{Environment.NewLine}Please shorten Base Name before conversion.",
+                    "D88 File Name Too Long",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return false;
+            }
         }
 
         return true;
@@ -1347,6 +1404,14 @@ public partial class MainForm : Form
             yield return txtOutputDir.Text.Trim();
         }
 
+        if (chkCreateD88.Checked && !chkPngOnly.Checked)
+        {
+            yield return "--d88";
+            yield return CurrentD88Path();
+            yield return "--d88-sidecar";
+            yield return chkKeepD88Sidecar.Checked ? "keep" : "delete";
+        }
+
         yield return txtInput.Text.Trim();
         yield return txtBaseName.Text.Trim();
     }
@@ -1358,11 +1423,16 @@ public partial class MainForm : Form
         var mode = Selected(cmbMode);
         var layout = Selected(cmbLayout);
 
+        if (chkCreateD88.Checked && !chkPngOnly.Checked)
+        {
+            yield return CurrentD88Path();
+        }
+
         if (mode == "512")
         {
             foreach (var fixedChannel in FixedChannelsForOutput())
             {
-                var stem = $"{baseStem}_fixed{fixedChannel}";
+                var stem = $"{baseStem}_{FixedChannelToken(fixedChannel)}";
                 if (layout == "split320x200")
                 {
                     yield return Path.Combine(outputDir, $"{stem}_u.png");
@@ -1374,7 +1444,7 @@ public partial class MainForm : Form
 
                     yield return Path.Combine(outputDir, $"{stem}_u.brd");
                     yield return Path.Combine(outputDir, $"{stem}_l.brd");
-                    yield return Path.Combine(outputDir, $"{stem}_ul.bas.bsd");
+                    yield return Path.Combine(outputDir, $"{stem}_c.bas.bsd");
                 }
                 else
                 {
@@ -1411,6 +1481,46 @@ public partial class MainForm : Form
         return Selected(cmbFixed) == "all" ? ["R", "G", "B"] : [Selected(cmbFixed)];
     }
 
+    private static string FixedChannelToken(string fixedChannel) =>
+        fixedChannel switch
+        {
+            "R" => "FR",
+            "G" => "FG",
+            "B" => "FB",
+            _ => fixedChannel
+        };
+
+    private IEnumerable<string> BuildProjectedD88InternalNames()
+    {
+        var baseStem = OutputBaseStem();
+        var mode = Selected(cmbMode);
+        var layout = Selected(cmbLayout);
+
+        if (mode == "512")
+        {
+            foreach (var fixedChannel in FixedChannelsForOutput())
+            {
+                var stem = $"{baseStem}_{FixedChannelToken(fixedChannel)}";
+                if (layout == "split320x200")
+                {
+                    yield return $"{stem}_u";
+                    yield return $"{stem}_l";
+                    yield return $"{stem}_c.bas";
+                }
+                else
+                {
+                    yield return stem;
+                    yield return $"{stem}.bas";
+                }
+            }
+
+            yield break;
+        }
+
+        yield return baseStem;
+        yield return $"{baseStem}.bas";
+    }
+
     private string CurrentOutputDirectory()
     {
         if (!string.IsNullOrWhiteSpace(txtOutputDir.Text))
@@ -1430,6 +1540,16 @@ public partial class MainForm : Form
         }
 
         return Path.GetFileNameWithoutExtension(baseName);
+    }
+
+    private string CurrentD88Path()
+    {
+        return Path.Combine(CurrentOutputDirectory(), $"{OutputBaseStem()}.d88");
+    }
+
+    private void UpdateD88PathDisplay()
+    {
+        txtD88Path.Text = CurrentD88Path();
     }
 
     private static string BuildCommandPreview(ProcessStartInfo psi)
@@ -1472,6 +1592,7 @@ public partial class MainForm : Form
         AddOutputFiles(outputs, "brd", "BRD");
         AddOutputFiles(outputs, "bsd", "BSD");
         AddOutputFiles(outputs, "palette", "Palette");
+        AddOutputFiles(outputs, "d88", "D88");
 
         cmbOutputs.Items.Clear();
         cmbOutputs.Items.AddRange(outputImages.Cast<object>().ToArray());
@@ -1857,3 +1978,5 @@ public partial class MainForm : Form
     }
 
 }
+
+
