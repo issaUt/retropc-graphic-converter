@@ -37,6 +37,7 @@ public partial class MainForm : Form
     private readonly NumericUpDown numStrength = new();
     private readonly CheckBox chkPngOnly = new();
     private readonly CheckBox chkCreateD88 = new();
+    private readonly CheckBox chkAppendToExistingD88 = new();
     private readonly CheckBox chkKeepD88Sidecar = new();
     private readonly TextBox txtD88Path = new();
     private readonly Button btnRun = new();
@@ -130,7 +131,7 @@ public partial class MainForm : Form
             Margin = new Padding(0),
             Padding = new Padding(0)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 296));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 332));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         root.Controls.Add(BuildSettingsPanel(), 0, 0);
@@ -149,7 +150,7 @@ public partial class MainForm : Form
         };
 
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 108));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 144));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
 
@@ -175,6 +176,7 @@ public partial class MainForm : Form
         txtBaseName.TextChanged += (_, _) => UpdateD88PathDisplay();
         chkPngOnly.CheckedChanged += (_, _) => UpdateOptionState();
         chkCreateD88.CheckedChanged += (_, _) => UpdateOptionState();
+        chkAppendToExistingD88.CheckedChanged += (_, _) => UpdateOptionState();
 
         controlsDisabledDuringRun.AddRange([pathsPanel, outputPanel, ditherPanel]);
 
@@ -210,7 +212,7 @@ public partial class MainForm : Form
     }
     private Control BuildOutputOptionsPanel()
     {
-        var panel = CreateSixColumnPanel(3);
+        var panel = CreateSixColumnPanel(4);
 
         panel.Controls.Add(MakeLabel("Base Name"), 0, 0);
         SetupHistoryCombo(txtBaseName);
@@ -228,20 +230,26 @@ public partial class MainForm : Form
         chkCreateD88.Dock = DockStyle.Fill;
         chkCreateD88.TextAlign = ContentAlignment.MiddleLeft;
         panel.Controls.Add(chkCreateD88, 3, 1);
+        chkAppendToExistingD88.Text = "既存D88ファイルがある場合はファイルを追加";
+        chkAppendToExistingD88.AutoSize = true;
+        chkAppendToExistingD88.Dock = DockStyle.Fill;
+        chkAppendToExistingD88.TextAlign = ContentAlignment.MiddleLeft;
+        panel.Controls.Add(chkAppendToExistingD88, 3, 2);
+        panel.SetColumnSpan(chkAppendToExistingD88, 3);
         chkKeepD88Sidecar.Text = "BRD/BSDファイルを残す";
         chkKeepD88Sidecar.AutoSize = true;
         chkKeepD88Sidecar.Dock = DockStyle.Fill;
         chkKeepD88Sidecar.TextAlign = ContentAlignment.MiddleLeft;
-        panel.Controls.Add(chkKeepD88Sidecar, 4, 1);
+        panel.Controls.Add(chkKeepD88Sidecar, 1, 2);
         panel.SetColumnSpan(chkKeepD88Sidecar, 2);
 
-        panel.Controls.Add(MakeLabel("Mode"), 0, 2);
+        panel.Controls.Add(MakeLabel("Mode"), 0, 3);
         SetupCombo(cmbMode, ["8", "16", "512", "4096"]);
-        panel.Controls.Add(MakeLeftAlignedControl(cmbMode, 150), 1, 2);
-        panel.Controls.Add(MakeLabel("Fixed"), 2, 2);
+        panel.Controls.Add(MakeLeftAlignedControl(cmbMode, 150), 1, 3);
+        panel.Controls.Add(MakeLabel("Fixed"), 2, 3);
         SetupCombo(cmbFixed, ["R", "G", "B", "all"]);
-        panel.Controls.Add(MakeLeftAlignedControl(cmbFixed, 96), 3, 2);
-        AddRightOptionCombo(panel, "Layout", cmbLayout, 2, ["640x400", "640x200", "320x200", "split320x200"]);
+        panel.Controls.Add(MakeLeftAlignedControl(cmbFixed, 96), 3, 3);
+        AddRightOptionCombo(panel, "Layout", cmbLayout, 3, ["640x400", "640x200", "320x200", "split320x200"]);
 
         return panel;
     }
@@ -534,6 +542,7 @@ public partial class MainForm : Form
         cmbSort.SelectedItem = "no_sort";
         chkPngOnly.Checked = false;
         chkCreateD88.Checked = false;
+        chkAppendToExistingD88.Checked = false;
         chkKeepD88Sidecar.Checked = true;
         numStrength.Value = 1.0M;
         UpdateD88PathDisplay();
@@ -552,6 +561,7 @@ public partial class MainForm : Form
         SetCombo(cmbSort, "no_sort");
         chkPngOnly.Checked = false;
         chkCreateD88.Checked = false;
+        chkAppendToExistingD88.Checked = false;
         chkKeepD88Sidecar.Checked = true;
         numStrength.Value = 1.0M;
         UpdateD88PathDisplay();
@@ -604,6 +614,7 @@ public partial class MainForm : Form
             SetCombo(cmbSort, settings.Sort);
             chkPngOnly.Checked = settings.PngOnly;
             chkCreateD88.Checked = settings.CreateD88;
+            chkAppendToExistingD88.Checked = settings.AppendToExistingD88;
             chkKeepD88Sidecar.Checked = settings.KeepD88SidecarFiles
                 ?? !string.Equals(settings.D88Sidecar, "delete", StringComparison.OrdinalIgnoreCase);
             chkPreviewDisplayAspect.Checked = settings.PreviewDisplayAspect;
@@ -651,6 +662,7 @@ public partial class MainForm : Form
                 Sort = Selected(cmbSort),
                 PngOnly = chkPngOnly.Checked,
                 CreateD88 = chkCreateD88.Checked,
+                AppendToExistingD88 = chkAppendToExistingD88.Checked,
                 D88Sidecar = chkKeepD88Sidecar.Checked ? "keep" : "delete",
                 KeepD88SidecarFiles = chkKeepD88Sidecar.Checked,
                 PreviewDisplayAspect = chkPreviewDisplayAspect.Checked
@@ -1107,6 +1119,7 @@ public partial class MainForm : Form
         }
 
         chkCreateD88.Enabled = !chkPngOnly.Checked;
+        chkAppendToExistingD88.Enabled = chkCreateD88.Checked;
         chkKeepD88Sidecar.Enabled = chkCreateD88.Checked;
         UpdateD88PathDisplay();
     }
@@ -1408,6 +1421,10 @@ public partial class MainForm : Form
         {
             yield return "--d88";
             yield return CurrentD88Path();
+            if (chkAppendToExistingD88.Checked)
+            {
+                yield return "--d88-append-if-exists";
+            }
             yield return "--d88-sidecar";
             yield return chkKeepD88Sidecar.Checked ? "keep" : "delete";
         }

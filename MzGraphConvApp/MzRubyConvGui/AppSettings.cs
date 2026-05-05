@@ -24,6 +24,7 @@ public partial class MainForm
         public string? Sort { get; set; }
         public bool PngOnly { get; set; }
         public bool CreateD88 { get; set; }
+        public bool AppendToExistingD88 { get; set; }
         public string? D88Sidecar { get; set; }
         public bool? KeepD88SidecarFiles { get; set; }
         public bool PreviewDisplayAspect { get; set; }
