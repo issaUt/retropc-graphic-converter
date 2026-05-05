@@ -74,7 +74,7 @@ ruby pngconvMZ.rb --json --info
 正常に取得できる場合は、以下のように表示されます。
 
 ```text
-pngconvMZ 0.1.2
+pngconvMZ 0.1.3
 ```
 
 ここまで確認できれば、`Convert` タブで入力画像、出力先、変換条件を指定して実行できます。
