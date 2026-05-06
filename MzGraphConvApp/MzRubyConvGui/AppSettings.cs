@@ -10,6 +10,7 @@ public partial class MainForm
         public string? InputPath { get; set; }
         public string? OutputDir { get; set; }
         public string? BaseName { get; set; }
+        public string? Machine { get; set; }
         public List<string>? InputHistory { get; set; }
         public List<string>? OutputDirHistory { get; set; }
         public List<string>? BaseNameHistory { get; set; }

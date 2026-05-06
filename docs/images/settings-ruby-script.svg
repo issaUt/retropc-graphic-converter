@@ -44,7 +44,7 @@
   <text class="small" x="848" y="143">参照...</text>
 
   <text class="label" x="30" y="188">Script Version</text>
-  <text class="hint" x="128" y="188">pngconvMZ 0.1.3</text>
+  <text class="hint" x="128" y="188">pngconvMZ 0.1.4</text>
   <rect class="button" x="824" y="164" width="76" height="28" rx="3" />
   <text class="small" x="852" y="183">Get</text>
 

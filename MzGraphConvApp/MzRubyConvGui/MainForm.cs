@@ -11,6 +11,7 @@ public partial class MainForm : Form
     private const int RightOptionLabelWidth = 82;
     private const int RightActionButtonWidth = 104;
     private const int RightOptionControlWidth = RightActionButtonWidth;
+    private const int MachineAndModeComboWidth = 150;
 
     private static readonly string SettingsDir = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -26,6 +27,7 @@ public partial class MainForm : Form
     private readonly ComboBox txtInput = new();
     private readonly ComboBox txtOutputDir = new();
     private readonly ComboBox txtBaseName = new();
+    private readonly ComboBox cmbMachine = new();
     private readonly ComboBox cmbMode = new();
     private readonly ComboBox cmbFixed = new();
     private readonly ComboBox cmbLayout = new();
@@ -62,6 +64,43 @@ public partial class MainForm : Form
     private string? currentOriginalPath;
     private string? currentPreviewPath;
     private bool cancelRequested;
+
+    private sealed class MachineUiProfile
+    {
+        public required string Id { get; init; }
+        public required string Label { get; init; }
+        public required string[] Modes { get; init; }
+        public required Dictionary<string, string[]> LayoutsByMode { get; init; }
+    }
+
+    private static readonly MachineUiProfile[] MachineProfiles =
+    [
+        new()
+        {
+            Id = "mz2500",
+            Label = "MZ-2500",
+            Modes = ["8", "16", "512", "4096"],
+            LayoutsByMode = new Dictionary<string, string[]>
+            {
+                ["8"] = ["640x400", "640x200", "320x200"],
+                ["16"] = ["640x400", "640x200", "320x200"],
+                ["512"] = ["320x200", "split320x200"],
+                ["4096"] = ["640x400", "640x200", "320x200"]
+            }
+        },
+        new()
+        {
+            Id = "mz2861",
+            Label = "MZ-2861",
+            Modes = ["8", "16", "4096"],
+            LayoutsByMode = new Dictionary<string, string[]>
+            {
+                ["8"] = ["640x400", "640x200"],
+                ["16"] = ["640x400", "640x200"],
+                ["4096"] = ["640x400", "640x200"]
+            }
+        }
+    ];
 
     public MainForm()
     {
@@ -131,7 +170,7 @@ public partial class MainForm : Form
             Margin = new Padding(0),
             Padding = new Padding(0)
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 332));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 368));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         root.Controls.Add(BuildSettingsPanel(), 0, 0);
@@ -150,7 +189,7 @@ public partial class MainForm : Form
         };
 
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 144));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 180));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 72));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
 
@@ -164,7 +203,16 @@ public partial class MainForm : Form
         root.Controls.Add(ditherPanel, 0, 2);
         root.Controls.Add(actionPanel, 0, 3);
 
-        cmbMode.SelectedIndexChanged += (_, _) => UpdateOptionState();
+        cmbMachine.SelectedIndexChanged += (_, _) =>
+        {
+            RefreshMachineDependentCombos();
+            UpdateOptionState();
+        };
+        cmbMode.SelectedIndexChanged += (_, _) =>
+        {
+            RefreshLayoutChoices();
+            UpdateOptionState();
+        };
         cmbLayout.SelectedIndexChanged += (_, _) =>
         {
             UpdateOptionState();
@@ -212,14 +260,14 @@ public partial class MainForm : Form
     }
     private Control BuildOutputOptionsPanel()
     {
-        var panel = CreateSixColumnPanel(4);
+        var panel = CreateSixColumnPanel(5);
 
         panel.Controls.Add(MakeLabel("Base Name"), 0, 0);
         SetupHistoryCombo(txtBaseName);
         panel.Controls.Add(txtBaseName, 1, 0);
         panel.SetColumnSpan(txtBaseName, 3);
         AddRightOptionCombo(panel, "Resize", cmbResize, 0, ["fit", "keep", "cut"]);
-        chkPngOnly.Text = "MZ-2500\u5c02\u7528\u30d5\u30a1\u30a4\u30eb\u3092\u51fa\u529b\u3057\u306a\u3044";
+        chkPngOnly.Text = "機種専用ファイルを出力しない";
         chkPngOnly.AutoSize = true;
         chkPngOnly.Dock = DockStyle.Fill;
         chkPngOnly.TextAlign = ContentAlignment.MiddleLeft;
@@ -243,13 +291,19 @@ public partial class MainForm : Form
         panel.Controls.Add(chkKeepD88Sidecar, 1, 2);
         panel.SetColumnSpan(chkKeepD88Sidecar, 2);
 
-        panel.Controls.Add(MakeLabel("Mode"), 0, 3);
+        panel.Controls.Add(MakeLabel("Machine"), 0, 3);
+        SetupCombo(cmbMachine, MachineProfiles.Select(profile => profile.Id).ToArray());
+        panel.Controls.Add(MakeLeftAlignedControl(cmbMachine, MachineAndModeComboWidth), 1, 3);
+        panel.Controls.Add(MakeSmallLabel("MZ-2500 / MZ-2861"), 2, 3);
+        panel.SetColumnSpan(panel.GetControlFromPosition(2, 3)!, 2);
+
+        panel.Controls.Add(MakeLabel("Mode"), 0, 4);
         SetupCombo(cmbMode, ["8", "16", "512", "4096"]);
-        panel.Controls.Add(MakeLeftAlignedControl(cmbMode, 150), 1, 3);
-        panel.Controls.Add(MakeLabel("Fixed"), 2, 3);
+        panel.Controls.Add(MakeLeftAlignedControl(cmbMode, MachineAndModeComboWidth), 1, 4);
+        panel.Controls.Add(MakeLabel("Fixed"), 2, 4);
         SetupCombo(cmbFixed, ["R", "G", "B", "all"]);
-        panel.Controls.Add(MakeLeftAlignedControl(cmbFixed, 96), 3, 3);
-        AddRightOptionCombo(panel, "Layout", cmbLayout, 3, ["640x400", "640x200", "320x200", "split320x200"]);
+        panel.Controls.Add(MakeLeftAlignedControl(cmbFixed, 96), 3, 4);
+        AddRightOptionCombo(panel, "Layout", cmbLayout, 4, ["640x400", "640x200", "320x200", "split320x200"]);
 
         return panel;
     }
@@ -532,9 +586,9 @@ public partial class MainForm : Form
         txtOutputDir.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MzRubyConv");
         txtBaseName.Text = "output";
 
-        cmbMode.SelectedItem = "512";
+        SetCombo(cmbMachine, "mz2500");
+        RefreshMachineDependentCombos("512", "split320x200");
         cmbFixed.SelectedItem = "all";
-        cmbLayout.SelectedItem = "split320x200";
         cmbResize.SelectedItem = "fit";
         cmbMethod.SelectedItem = "floyd_steinberg";
         cmbDistance.SelectedItem = "rgb";
@@ -551,9 +605,9 @@ public partial class MainForm : Form
 
     private void ApplyRubyCoreOptionDefaults()
     {
-        SetCombo(cmbMode, "8");
+        SetCombo(cmbMachine, "mz2500");
+        RefreshMachineDependentCombos("8", "640x400");
         SetCombo(cmbFixed, "R");
-        SetCombo(cmbLayout, "640x400");
         SetCombo(cmbResize, "fit");
         SetCombo(cmbMethod, "floyd_steinberg");
         SetCombo(cmbDistance, "rgb");
@@ -604,9 +658,9 @@ public partial class MainForm : Form
             txtInput.Text = settings.InputPath ?? txtInput.Text;
             txtOutputDir.Text = settings.OutputDir ?? txtOutputDir.Text;
             txtBaseName.Text = settings.BaseName ?? txtBaseName.Text;
-            SetCombo(cmbMode, settings.Mode);
+            SetCombo(cmbMachine, settings.Machine);
+            RefreshMachineDependentCombos(settings.Mode, settings.Layout);
             SetCombo(cmbFixed, settings.Fixed);
-            SetCombo(cmbLayout, settings.Layout);
             SetCombo(cmbResize, settings.Resize);
             SetCombo(cmbMethod, settings.Method);
             SetCombo(cmbDistance, settings.Distance);
@@ -648,6 +702,7 @@ public partial class MainForm : Form
                 InputPath = txtInput.Text,
                 OutputDir = txtOutputDir.Text,
                 BaseName = txtBaseName.Text,
+                Machine = Selected(cmbMachine),
                 InputHistory = BuildHistory(txtInput, txtInput.Text),
                 OutputDirHistory = BuildHistory(txtOutputDir, txtOutputDir.Text),
                 BaseNameHistory = BuildHistory(txtBaseName, txtBaseName.Text),
@@ -786,6 +841,21 @@ public partial class MainForm : Form
             combo.SelectedIndex = 0;
         }
         combo.Dock = DockStyle.Fill;
+    }
+
+    private static void SetComboItems(ComboBox combo, IEnumerable<string> items, string? selectedValue = null)
+    {
+        var values = items.ToArray();
+        combo.Items.Clear();
+        combo.Items.AddRange(values);
+        if (values.Length == 0)
+        {
+            return;
+        }
+
+        var target = string.IsNullOrWhiteSpace(selectedValue) ? values[0] : selectedValue;
+        var index = Array.IndexOf(values, target);
+        combo.SelectedIndex = index >= 0 ? index : 0;
     }
 
     private static void SetupHistoryCombo(ComboBox combo)
@@ -1096,21 +1166,48 @@ public partial class MainForm : Form
         }
     }
 
+    private MachineUiProfile CurrentMachineProfile()
+    {
+        var id = Selected(cmbMachine);
+        return MachineProfiles.FirstOrDefault(profile => profile.Id == id) ?? MachineProfiles[0];
+    }
+
+    private void RefreshMachineDependentCombos(string? preferredMode = null, string? preferredLayout = null)
+    {
+        var profile = CurrentMachineProfile();
+        var mode = string.IsNullOrWhiteSpace(preferredMode) ? Selected(cmbMode) : preferredMode;
+        SetComboItems(cmbMode, profile.Modes, mode);
+        RefreshLayoutChoices(preferredLayout);
+    }
+
+    private void RefreshLayoutChoices(string? preferredLayout = null)
+    {
+        var profile = CurrentMachineProfile();
+        var mode = Selected(cmbMode);
+        if (!profile.LayoutsByMode.TryGetValue(mode, out var layouts))
+        {
+            layouts = profile.LayoutsByMode[profile.Modes[0]];
+        }
+
+        var layout = string.IsNullOrWhiteSpace(preferredLayout) ? Selected(cmbLayout) : preferredLayout;
+        SetComboItems(cmbLayout, layouts, layout);
+    }
+
     private void UpdateOptionState()
     {
+        var profile = CurrentMachineProfile();
         var mode = Selected(cmbMode);
         cmbFixed.Enabled = mode == "512";
         cmbRemove.Enabled = mode == "16";
         cmbSort.Enabled = mode == "4096";
-
-        if (mode == "512" && Selected(cmbLayout) == "640x400")
+        if (!profile.Modes.Contains(mode))
         {
-            cmbLayout.SelectedItem = "320x200";
+            RefreshMachineDependentCombos(profile.Modes[0], profile.LayoutsByMode[profile.Modes[0]][0]);
+            mode = Selected(cmbMode);
         }
-
-        if (mode != "512" && Selected(cmbLayout) == "split320x200")
+        else if (!profile.LayoutsByMode[mode].Contains(Selected(cmbLayout)))
         {
-            cmbLayout.SelectedItem = "320x200";
+            RefreshLayoutChoices(profile.LayoutsByMode[mode][0]);
         }
 
         if (chkPngOnly.Checked)
@@ -1238,9 +1335,12 @@ public partial class MainForm : Form
             MessageBox.Show(this, "Output base name is required.", "Missing Base Name", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
-        if (Selected(cmbMode) == "512" && Selected(cmbLayout) == "640x400")
+        var profile = CurrentMachineProfile();
+        var mode = Selected(cmbMode);
+        var layout = Selected(cmbLayout);
+        if (!profile.Modes.Contains(mode) || !profile.LayoutsByMode[mode].Contains(layout))
         {
-            MessageBox.Show(this, "512-color mode cannot use the 640x400 layout.", "Unsupported Layout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(this, $"{profile.Label} では mode={mode}, layout={layout} の組み合わせは使用できません。", "Unsupported Layout", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
         if (chkCreateD88.Checked && !chkPngOnly.Checked)
@@ -1378,6 +1478,9 @@ public partial class MainForm : Form
         {
             yield return "--png-only";
         }
+
+        yield return "--machine";
+        yield return Selected(cmbMachine);
 
         yield return "-m";
         yield return Selected(cmbMode);

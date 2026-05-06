@@ -74,7 +74,7 @@ ruby pngconvMZ.rb --json --info
 正常に取得できる場合は、以下のように表示されます。
 
 ```text
-pngconvMZ 0.1.3
+pngconvMZ 0.1.4
 ```
 
 ここまで確認できれば、`Convert` タブで入力画像、出力先、変換条件を指定して実行できます。
@@ -101,6 +101,7 @@ dotnet build .\MzGraphConvApp\MzRubyConvGui\MzRubyConvGui.csproj
 - `Settings` タブでRuby実行ファイルと変換スクリプトを指定
 - `Settings` タブで変換スクリプトのバージョン情報を確認
 - 入力画像 PNG/JPEG、出力フォルダ、ベース名の指定と履歴保存
+- `Machine` 切り替えによる機種別モード制御 (`MZ-2500` / `MZ-2861`)
 - PNGのみ出力の指定
 - 変換後PNG/BRD/BSD/Paletteファイルの一覧表示
 - 元画像とPreview画像の比較表示
